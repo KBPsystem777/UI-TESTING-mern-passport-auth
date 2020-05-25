@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import ReactDOM from "react-dom";
-import axios from "axios";
+
 import qs from "qs";
+import axios from "axios";
+
 import { Link } from "react-router-dom";
 
-require("dotenv").config();
+const AUTH_LOGIN_ADDRESS = "https://kbp-auth.now.sh/login";
 
-const AUTH_LOGIN_ADDRESS = process.env.LOGIN_URL;
-
+console.log(AUTH_LOGIN_ADDRESS);
 function LoginForm(props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
