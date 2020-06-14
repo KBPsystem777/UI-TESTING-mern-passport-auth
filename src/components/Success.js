@@ -6,10 +6,9 @@ import axios from "axios";
 const DEV_AUTH_LOGOUT_ADDRESS = "http://localhost:1993/logout";
 const PROD_AUTH_LOGOUT_ADDRESS = "https://kbp-auth.now.sh/logout";
 
-function Success() {
+function Success(props) {
   const token = Cookies.get("app_token");
   const [data, setData] = useState([""]);
-  console.log(token);
 
   function logOut() {
     // Delete the token cookie
@@ -20,8 +19,6 @@ function Success() {
       method: "get",
       url: DEV_AUTH_LOGOUT_ADDRESS || PROD_AUTH_LOGOUT_ADDRESS,
     }).then((res) => setData(res.data));
-    console.log(data);
-    alert(data.message);
   }
 
   return (

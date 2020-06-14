@@ -1,23 +1,33 @@
 import React, { useState, useEffect } from "react";
 import qs from "qs";
 import axios from "axios";
-import { Link } from "react-router-dom";
-import { useCookies } from "react-cookie";
+import { Link, Router, Route, Redirect } from "react-router-dom";
+import Cookies from "js-cookie";
+import Success from "./Success";
+import Failed from "./Failed";
 
-const AUTH_LOGIN_ADDRESS = "https://kbp-auth.now.sh/login";
+const DEV_AUTH_LOGIN_ADDRESS = "http://localhost:1993/login";
+const PROD_AUTH_LOGIN_ADDRESS = "https://kbp-auth.now.sh/login";
 
-console.log(AUTH_LOGIN_ADDRESS);
-function LoginForm(props) {
+console.log(DEV_AUTH_LOGIN_ADDRESS || PROD_AUTH_LOGIN_ADDRESS);
+
+export default function LoginForm(props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [data, setData] = useState([""]);
-  const [cookies, setCookies] = useCookies([""]);
 
-  const handleSubmit = (e) => {
+  // Building the Cookie setter
+  function buildCookies() {
+    Cookies.set("app_token", data.token, {
+      path: "/",
+      expires: 12,
+    });
+  }
+  const handleSubmit = (e, err, res, req) => {
     e.preventDefault();
     axios({
       method: "post",
-      url: AUTH_LOGIN_ADDRESS,
+      url: DEV_AUTH_LOGIN_ADDRESS || PROD_AUTH_LOGIN_ADDRESS,
       data: qs.stringify({
         email: email,
         password: password,
@@ -25,42 +35,43 @@ function LoginForm(props) {
       headers: {
         "content-type": "application/x-www-form-urlencoded;charset=utf-8",
       },
-    }).then((res) =>
-      setCookies("app-token", res.data, {
-        path: "/",
-        httpOnly: false,
-        maxAge: 1000 * 60 * 60,
-      })
-    );
+    }).then((res) => setData(res.data));
   };
 
   useEffect(() => {
-    console.log(cookies);
+    buildCookies();
   });
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <h2>Login</h2>
-      </div>
-      <input
-        type="email"
-        required
-        placeholder="email"
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <input
-        type="password"
-        required
-        placeholder="password"
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <input type="submit" value="Login" />
-      <div>
-        No Account yet? <Link to={"/signup"}>Sign up</Link> now
-      </div>
-    </form>
+    <div>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <h2>Login</h2>
+        </div>
+        <input
+          type="email"
+          required
+          placeholder="email"
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <input
+          type="password"
+          required
+          placeholder="password"
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <input type="submit" value="Login" />
+        <div>
+          No Account yet? <Link to={"/signup"}>Sign up</Link> now
+        </div>
+      </form>
+      <Route to="/">
+        {data.status === "SUCCESS" ? (
+          <Redirect to="/success" />
+        ) : (
+          <Redirect to="/login" />
+        )}
+      </Route>
+    </div>
   );
 }
-
-export default LoginForm;
